@@ -1,6 +1,6 @@
 import { ethers, toBeHex, toNumber } from "ethers";
-import { Swap } from "../types";
-import BaseProcessor from "./base-processor";
+import { Swap } from "../types.js";
+import BaseProcessor from "./base-processor.js";
 
 const zeroForOneMask = BigInt(1) << BigInt(255);
 const poolMask = (BigInt(1) << BigInt(160)) - BigInt(1);

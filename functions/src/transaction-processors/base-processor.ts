@@ -1,5 +1,5 @@
 import { Block } from "ethers";
-import { BlockProcessor, Swap } from "../types";
+import { BlockProcessor, Swap } from "../types.js";
 
 abstract class BaseProcessor implements BlockProcessor {
   parseBlock(block: Block): Promise<Swap[]> {

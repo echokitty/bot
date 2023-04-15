@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { range } from "./utils";
+import { range } from "./utils.js";
 
 export async function fetchBlocks(
   provider: ethers.Provider,

@@ -1,6 +1,6 @@
-import { BlockProcessor } from "./types";
-import OneInchRouterTransactionProcessor from "./transaction-processors/1inch-processor";
-import UniswapV3RouterTransactionProcessor from "./transaction-processors/uniswap-processor";
+import { BlockProcessor } from "./types.js";
+import OneInchRouterTransactionProcessor from "./transaction-processors/1inch-processor.js";
+import UniswapV3RouterTransactionProcessor from "./transaction-processors/uniswap-processor.js";
 
 const transactionProcessors: Record<string, BlockProcessor> = {
   "0x1111111254EEB25477B68fb85Ed929f73A960582":

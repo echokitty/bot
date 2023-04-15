@@ -1,4 +1,4 @@
-import { Swap } from "./types";
+import { Swap } from "./types.js";
 import fetch from "node-fetch";
 
 const dummyAddress = "0x80D1C008C8EEe2ba68C2B8103887A607e23c6182";

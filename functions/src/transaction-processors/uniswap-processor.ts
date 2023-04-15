@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
-import { Swap } from "../types";
-import BaseProcessor from "./base-processor";
+import { Swap } from "../types.js";
+import BaseProcessor from "./base-processor.js";
 
 class UniswapV3RouterTransactionProcessor extends BaseProcessor {
   parseTransaction(
