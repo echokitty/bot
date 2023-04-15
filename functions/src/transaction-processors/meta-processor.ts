@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
-import { BlockProcessor, Swap } from "../types.js";
-import BaseProcessor from "./base-processor.js";
-import OneInchRouterTransactionProcessor from "./1inch-processor.js";
+import { BlockProcessor, Swap } from "../types";
+import BaseProcessor from "./base-processor";
+import OneInchRouterTransactionProcessor from "./1inch-processor";
 
 export const transactionProcessors: Record<string, BlockProcessor> = {
   "0x1111111254EEB25477B68fb85Ed929f73A960582":

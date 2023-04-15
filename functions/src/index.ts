@@ -1,44 +1,46 @@
-import * as functions from "firebase-functions";
+// import * as functions from "firebase-functions";
 
-import { database } from "firebase-admin";
-import { initializeApp } from "firebase-admin/app";
-import { getBlocks, initializeBlockNumbers, persistBlocks } from "./database";
-import { fetchLatestBlockNumbers } from "./fetcher";
-import { processChain } from "./trader";
+// import { database } from "firebase-admin";
+// import { initializeApp } from "firebase-admin/app";
+// import { getBlocks, initializeBlockNumbers, persistBlocks } from "./database";
+// import { fetchLatestBlockNumbers } from "./fetcher";
+// import { processChain } from "./trader";
 
-initializeApp();
+// initializeApp();
 
-export const runTrader = functions.https.onRequest(
-  async (request, response) => {
-    const db = database();
-    const previousBlocks = await getBlocks(db);
-    if (!previousBlocks) {
-      initializeBlockNumbers(db);
-      return;
-    }
+// export const runTrader = functions.https.onRequest(
+//   async (request, response) => {
+//     const db = database();
+//     const previousBlocks = await getBlocks(db);
+//     if (!previousBlocks) {
+//       initializeBlockNumbers(db);
+//       return;
+//     }
 
-    const latestBlocks = await fetchLatestBlockNumbers();
+//     const latestBlocks = await fetchLatestBlockNumbers();
 
-    const promises = Object.keys(latestBlocks).map((chainId) =>
-      processChain(chainId, previousBlocks[chainId], latestBlocks[chainId])
-    );
-    await Promise.all(promises);
+//     const promises = Object.keys(latestBlocks).map((chainId) =>
+//       processChain(chainId, previousBlocks[chainId], latestBlocks[chainId])
+//     );
+//     await Promise.all(promises);
 
-    persistBlocks(db, latestBlocks);
+//     persistBlocks(db, latestBlocks);
 
-    response.send("Done");
-  }
-);
+//     response.send("Done");
+//   }
+// );
 
 // import OneInchRouterTransactionProcessor from "./transaction-processors/1inch-processor";
 // import { getSwapData } from "./trader";
 // import { fetchEvents } from "./event-manager";
-// import { rpcEndpoints } from "./constants";
-// import { ethers } from "ethers";
+import { rpcEndpoints } from "./constants";
+import { ethers } from "ethers";
+import { fetchPositions } from "./fetcher";
 // import { fetchBlocks } from "./fetcher";
 // import { fetchTransactions } from "./transaction-manager";
 
-// const provider = new ethers.JsonRpcProvider(rpcEndpoints[1]);
+const provider = new ethers.JsonRpcProvider(rpcEndpoints[137]);
+fetchPositions(provider, "137").then(console.log);
 
 // fetchTransactions(provider, 17049116, 17049116 + 100)
 //   .then(console.log)

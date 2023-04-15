@@ -1,6 +1,6 @@
 import { ethers, toBeHex, toNumber } from "ethers";
-import { Swap } from "../types.js";
-import BaseProcessor from "./base-processor.js";
+import { Swap, SwapDesc } from "../types";
+import BaseProcessor from "./base-processor";
 
 const zeroForOneMask = BigInt(1) << BigInt(255);
 const poolMask = (BigInt(1) << BigInt(160)) - BigInt(1);
@@ -46,27 +46,26 @@ const unoswapBaseParams = [
   "uint256[]", // pools
 ];
 
-type SwapData = Omit<Swap, "timestamp" | "chainId" | "txHash">;
-
 class OneInchRouterTransactionProcessor extends BaseProcessor {
   async parseTransaction(
     block: ethers.Block,
     transactionHash: string
   ): Promise<Swap | null> {
     const transaction = block.getPrefetchedTransaction(transactionHash);
-    const result = await this._parseTransactionData(transaction);
-    if (!result) return null;
+    const desc = await this._parseTransactionData(transaction);
+    if (!desc) return null;
     return {
-      ...result,
       timestamp: block.timestamp,
       chainId: toNumber(transaction.chainId),
       txHash: transaction.hash,
+      sender: transaction.from,
+      desc,
     };
   }
 
   private async _parseTransactionData(
     transaction: ethers.TransactionResponse
-  ): Promise<SwapData | null> {
+  ): Promise<SwapDesc | null> {
     const data = transaction.data;
     const selector = data.slice(0, 10);
     const rawArgs = "0x" + data.slice(10);
@@ -99,12 +98,12 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
     }
   }
 
-  processClipperSwap(rawArgs: string): SwapData {
+  processClipperSwap(rawArgs: string): SwapDesc {
     const decoded = abiCoder.decode(clipperSwapBaseParams, rawArgs);
     return this._clipperSwapToSwapData(decoded, 0);
   }
 
-  processClipperSwapTo(rawArgs: string): SwapData {
+  processClipperSwapTo(rawArgs: string): SwapDesc {
     const decoded = abiCoder.decode(
       ["address"].concat(clipperSwapBaseParams), // prepend recipient
       rawArgs
@@ -112,7 +111,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
     return this._clipperSwapToSwapData(decoded, 1);
   }
 
-  processClipperSwapToWithPermit(rawArgs: string): SwapData {
+  processClipperSwapToWithPermit(rawArgs: string): SwapDesc {
     const decoded = abiCoder.decode(
       // prepend recipient and append permit
       ["address"].concat(clipperSwapBaseParams).concat(["bytes"]),
@@ -121,7 +120,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
     return this._clipperSwapToSwapData(decoded, 1);
   }
 
-  _clipperSwapToSwapData(result: ethers.Result, offset: number): SwapData {
+  _clipperSwapToSwapData(result: ethers.Result, offset: number): SwapDesc {
     return {
       fromToken: result[offset + 1],
       toToken: result[offset + 2],
@@ -130,7 +129,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
     };
   }
 
-  processSwap(rawArgs: string): SwapData {
+  processSwap(rawArgs: string): SwapDesc {
     const decoded = abiCoder.decode(
       [
         "address", // executor
@@ -152,7 +151,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
   async processUniswapV3Swap(
     provider: ethers.Provider,
     rawArgs: string
-  ): Promise<SwapData> {
+  ): Promise<SwapDesc> {
     const [amountIn, minReturn, pools] = abiCoder.decode(
       uniswapBaseParams,
       rawArgs
@@ -163,7 +162,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
   processUniswapV3SwapTo(
     provider: ethers.Provider,
     rawArgs: string
-  ): Promise<SwapData> {
+  ): Promise<SwapDesc> {
     const [, amountIn, minReturn, pools] = abiCoder.decode(
       ["address"].concat(uniswapBaseParams), // prepend recipient
       rawArgs
@@ -174,7 +173,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
   processUniswapV3SwapToWithPermit(
     provider: ethers.Provider,
     rawArgs: string
-  ): Promise<SwapData> {
+  ): Promise<SwapDesc> {
     const [, , amountIn, minReturn, pools] = abiCoder.decode(
       // prepend recipient and srcToken, append permit
       ["address", "address"].concat(uniswapBaseParams).concat("bytes"),
@@ -186,7 +185,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
   processUnoswap(
     provider: ethers.Provider,
     rawArgs: string
-  ): Promise<SwapData> {
+  ): Promise<SwapDesc> {
     const [, amountIn, minReturn, pools] = abiCoder.decode(
       unoswapBaseParams,
       rawArgs
@@ -197,7 +196,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
   processUnoswapTo(
     provider: ethers.Provider,
     rawArgs: string
-  ): Promise<SwapData> {
+  ): Promise<SwapDesc> {
     const [, , amountIn, minReturn, pools] = abiCoder.decode(
       ["address"].concat(unoswapBaseParams), // prepend recipient
       rawArgs
@@ -208,7 +207,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
   processNoswapToWithPermit(
     provider: ethers.Provider,
     rawArgs: string
-  ): Promise<SwapData> {
+  ): Promise<SwapDesc> {
     const [, , amountIn, minReturn, pools] = abiCoder.decode(
       // prepend recipient, append permit
       ["address"].concat(unoswapBaseParams).concat("bytes"),
@@ -222,7 +221,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
     amountIn: bigint,
     minReturn: bigint,
     pools: bigint[]
-  ): Promise<SwapData> {
+  ): Promise<SwapDesc> {
     const [tokenIn, tokenOut] = await Promise.all([
       this._getTokenFromPool(provider, pools[0], true),
       this._getTokenFromPool(provider, pools[pools.length - 1], false),

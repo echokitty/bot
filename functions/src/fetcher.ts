@@ -1,6 +1,8 @@
 import { ethers } from "ethers";
-import { range } from "./utils.js";
-import { rpcEndpoints } from "./constants";
+import { range } from "./utils";
+import { botAddress, contracts, rpcEndpoints } from "./constants";
+import { Position } from "./types";
+import * as abis from "./abis";
 
 export type BlockNumbers = Record<string, number>;
 
@@ -31,4 +33,54 @@ export async function fetchLatestBlockNumbers(): Promise<BlockNumbers> {
   );
 }
 
-// export async function getPositions()
+async function fetchSubwalletTarget(
+  provider: ethers.Provider,
+  subwalletAddress: string
+): Promise<string> {
+  const subwallet = new ethers.Contract(
+    subwalletAddress,
+    abis.subwallet,
+    provider
+  );
+  return subwallet.getFunction("target").staticCall();
+}
+
+async function fetchSubwallets(
+  provider: ethers.Provider,
+  walletAddress: string
+): Promise<Position[]> {
+  const wallet = new ethers.Contract(walletAddress, abis.wallet, provider);
+  const subwallets = Array.from(await wallet.listSubwallets()) as string[];
+  const targets = await Promise.all(
+    subwallets.map((wallet) => fetchSubwalletTarget(provider, wallet))
+  );
+  return subwallets.map((subwallet, i) => {
+    return {
+      account: subwallet,
+      target: targets[i],
+    };
+  });
+}
+
+export async function fetchPositions(
+  provider: ethers.Provider,
+  chainId: string
+): Promise<Position[]> {
+  const contractAddresses = contracts[chainId];
+  const authorizationRegistry = new ethers.Contract(
+    contractAddresses.AuthorizationRegistry,
+    abis.authorizationRegistry,
+    provider
+  );
+  const walletAddresses = Array.from(
+    await authorizationRegistry.addressesManagedBy(botAddress)
+  ) as string[];
+  console.log(walletAddresses);
+
+  const positions = await Promise.all(
+    walletAddresses.map((walletAddress) =>
+      fetchSubwallets(provider, walletAddress)
+    )
+  );
+  return positions.flat();
+}
