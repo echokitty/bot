@@ -18,5 +18,6 @@ export const contracts: Record<string, ContractAddresses> = {
 };
 
 export const botAddress = "0x84C215bBc7B8753cdb07991a619D51A14E09A8C0";
+export const botPrivateKey = process.env.BOT_PRIVATE_KEY;
 
 export const nativeTokenAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";

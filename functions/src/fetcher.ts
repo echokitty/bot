@@ -42,7 +42,8 @@ async function fetchSubwalletTarget(
     abis.subwallet,
     provider
   );
-  return subwallet.getFunction("target").staticCall();
+  const fragment = subwallet.getFunction("target");
+  return fragment.staticCall();
 }
 
 async function fetchSubwallets(
@@ -75,7 +76,6 @@ export async function fetchPositions(
   const walletAddresses = Array.from(
     await authorizationRegistry.addressesManagedBy(botAddress)
   ) as string[];
-  console.log(walletAddresses);
 
   const positions = await Promise.all(
     walletAddresses.map((walletAddress) =>

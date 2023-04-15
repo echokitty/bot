@@ -9,6 +9,7 @@ export type SwapDesc = {
 
 export type Swap = {
   sender: string;
+  blockNumber: number;
   timestamp: number;
   chainId: number;
   txHash: string;

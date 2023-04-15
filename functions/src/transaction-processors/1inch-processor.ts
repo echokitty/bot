@@ -56,6 +56,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
     if (!desc) return null;
     return {
       timestamp: block.timestamp,
+      blockNumber: block.number,
       chainId: toNumber(transaction.chainId),
       txHash: transaction.hash,
       sender: transaction.from,

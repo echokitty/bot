@@ -3,12 +3,14 @@ import { getSwapData } from "../trader";
 import { nativeTokenAddress, rpcEndpoints } from "../constants";
 import { ethers } from "ethers";
 import * as abis from "../abis";
+import { format1inchSwap } from "../utils";
 
 const swaps: Swap[] = [
   {
     chainId: 137,
     sender: "0x5596D991Bf7753F0f14e1C5B59AbBEA626725401",
     timestamp: 1681573555,
+    blockNumber: 1,
     txHash: "0x",
     desc: {
       fromAmount: BigInt("10000000000000000"),
@@ -21,6 +23,7 @@ const swaps: Swap[] = [
     chainId: 137,
     sender: "0x5596D991Bf7753F0f14e1C5B59AbBEA626725401",
     timestamp: 1681573555,
+    blockNumber: 1,
     txHash: "0x",
     desc: {
       fromAmount: BigInt("5000000000000000"),
@@ -31,13 +34,8 @@ const swaps: Swap[] = [
   },
 ];
 
-const walletAddress = "0x9B6B2862357d7D3232fd115E3d7379Dfe4846fc6";
+const walletAddress = "0x909Bb1c1547d6fEa468184C3B821aDB12B2F36D6";
 const target = "0x5596D991Bf7753F0f14e1C5B59AbBEA626725401";
-
-const format1inchSwap = (swap: any) => {
-  const tx = swap.tx;
-  return [[tx.to, tx.data, tx.value], swap.toToken.address];
-};
 
 const encoder = ethers.AbiCoder.defaultAbiCoder();
 const provider = new ethers.JsonRpcProvider(rpcEndpoints[137]);
