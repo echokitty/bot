@@ -12,8 +12,8 @@ export const lastBlocksKey = "lastBlocks";
 
 export const contracts: Record<string, ContractAddresses> = {
   137: {
-    AuthorizationRegistry: "0x8B97090B11aC78d15723c49BF314C379E3768EAc",
-    WalletFactory: "0x039F01ef5EbBfd6c59178E1Ac8F1107DcDf98169",
+    AuthorizationRegistry: "0xF4277421bDA6a2E1C36b827fbf9F817A8d573888",
+    WalletFactory: "0x88865532AB232aab74C69FEb0409A00133d053d8",
   },
 };
 
