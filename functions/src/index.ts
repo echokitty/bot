@@ -9,13 +9,13 @@ import { activeChains } from "./constants";
 
 initializeApp();
 
-export const runTrader = functions.https.onRequest(
-  async (request, response) => {
+export const runTrader = functions.pubsub
+  .schedule("every 1 minutes")
+  .onRun(async () => {
     const db = database();
     const previousBlocks = await getBlocks(db);
     if (!previousBlocks) {
       initializeBlockNumbers(db);
-      response.send("Done");
       return;
     }
 
@@ -29,7 +29,4 @@ export const runTrader = functions.https.onRequest(
     await Promise.all(promises);
 
     persistBlocks(db, latestBlocks);
-
-    response.send("Done");
-  }
-);
+  });
