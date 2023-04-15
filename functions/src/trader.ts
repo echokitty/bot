@@ -1,11 +1,12 @@
 import { Contract, ethers } from "ethers";
+import * as functions from "firebase-functions";
 import fetch from "node-fetch";
+import * as abis from "./abis";
 import { botPrivateKey, rpcEndpoints } from "./constants";
 import { fetchBlocks, fetchPositions } from "./fetcher";
-import { Swap } from "./types";
 import { metaProcessor } from "./transaction-processors";
+import { Swap } from "./types";
 import { format1inchSwap } from "./utils";
-import * as abis from "./abis";
 
 const getApiEndpoint = (chainId: number) =>
   `https://api.1inch.io/v5.0/${chainId}/swap`;
@@ -55,6 +56,9 @@ export async function fetchAllSwaps(
 ): Promise<any[]> {
   const blocks = await fetchBlocks(provider, startBlock, endBlock);
   const positions = await fetchPositions(provider, chainId);
+  functions.logger.info("positions: ", positions, {
+    structuredData: true,
+  });
   const validSenders = Object.fromEntries(
     positions.map((p) => [p.target, p.account])
   );

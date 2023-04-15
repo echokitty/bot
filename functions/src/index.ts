@@ -9,8 +9,12 @@ import { activeChains } from "./constants";
 
 initializeApp();
 
-export const runTrader = functions.pubsub
-  .schedule("every 1 minutes")
+export const runTrader = functions
+  .runWith({
+    timeoutSeconds: 45,
+    memory: "512MB",
+  })
+  .pubsub.schedule("every 1 minutes")
   .onRun(async () => {
     const db = database();
     const previousBlocks = await getBlocks(db);
