@@ -1,24 +1,21 @@
 import { Database } from "firebase-admin/database";
-import { rpcEndpoints } from "./constants";
-import { ethers } from "ethers";
+import { BlockNumbers, fetchLatestBlockNumbers } from "./fetcher";
+import { lastBlocksKey } from "./constants";
 
-function getLatestBlock(chainId: string): Promise<number> {
-  const provider = new ethers.JsonRpcProvider(rpcEndpoints[chainId]);
-  return provider.getBlockNumber();
+export async function initializeBlockNumbers(db: Database) {
+  const initialBlocks = await fetchLatestBlockNumbers();
+  await db.ref(lastBlocksKey).set(initialBlocks);
 }
 
-async function getLatestBlocks(): Promise<Record<string, number>> {
-  const latestBlocks = await Promise.all(
-    Object.keys(rpcEndpoints).map((chainId: string) => getLatestBlock(chainId))
-  );
-  return Object.fromEntries(
-    Object.keys(rpcEndpoints).map((chainId, i) => [chainId, latestBlocks[i]])
-  );
-}
-
-export async function getBlocks(db: Database): Promise<Record<string, number>> {
-  const blocksSnapshot = await db.ref("lastBlocks").get();
+export async function getBlocks(
+  db: Database
+): Promise<Record<string, number> | null> {
+  const blocksSnapshot = await db.ref(lastBlocksKey).get();
   const blocks = blocksSnapshot.val() as Record<string, number>;
   if (blocks) return blocks;
-  return getLatestBlocks();
+  return null;
+}
+
+export async function persistBlocks(db: Database, blocks: BlockNumbers) {
+  await db.ref(lastBlocksKey).set(blocks);
 }

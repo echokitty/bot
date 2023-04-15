@@ -2,23 +2,31 @@ import * as functions from "firebase-functions";
 
 import { database } from "firebase-admin";
 import { initializeApp } from "firebase-admin/app";
-import { getBlocks } from "./database";
+import { getBlocks, initializeBlockNumbers, persistBlocks } from "./database";
+import { fetchLatestBlockNumbers } from "./fetcher";
+import { processChain } from "./trader";
 
 initializeApp();
 
 export const runTrader = functions.https.onRequest(
   async (request, response) => {
     const db = database();
-    const blocks = await getBlocks(db);
-
-    for (const [chainId, block] of Object.entries(blocks)) {
-      functions.logger.info("chain id: ", chainId, "block: ", block, {
-        structuredData: true,
-      });
-      blocks[chainId] = block + 100;
+    const previousBlocks = await getBlocks(db);
+    if (!previousBlocks) {
+      initializeBlockNumbers(db);
+      return;
     }
-    await database().ref("lastBlocks").set(blocks);
-    response.send("Hello from Firebase!");
+
+    const latestBlocks = await fetchLatestBlockNumbers();
+
+    const promises = Object.keys(latestBlocks).map((chainId) =>
+      processChain(chainId, previousBlocks[chainId], latestBlocks[chainId])
+    );
+    await Promise.all(promises);
+
+    persistBlocks(db, latestBlocks);
+
+    response.send("Done");
   }
 );
 

@@ -7,7 +7,7 @@ class UniswapV3RouterTransactionProcessor extends BaseProcessor {
     block: ethers.Block,
     transactionHash: string
   ): Promise<Swap | null> {
-    return null;
+    throw new Error("Method not implemented.");
   }
 }
 

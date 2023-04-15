@@ -46,7 +46,7 @@ const unoswapBaseParams = [
   "uint256[]", // pools
 ];
 
-type SwapData = Omit<Swap, "timestamp" | "chainId">;
+type SwapData = Omit<Swap, "timestamp" | "chainId" | "txHash">;
 
 class OneInchRouterTransactionProcessor extends BaseProcessor {
   async parseTransaction(
@@ -60,6 +60,7 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
       ...result,
       timestamp: block.timestamp,
       chainId: toNumber(transaction.chainId),
+      txHash: transaction.hash,
     };
   }
 

@@ -5,3 +5,5 @@ export const rpcEndpoints = {
   137: process.env.POLYGON_MAINNET_RPC_ENDPOINT,
   42161: process.env.ARBITRUM_MAINNET_RPC_ENDPOINT,
 };
+
+export const lastBlocksKey = "lastBlocks";

@@ -7,6 +7,7 @@ export type Swap = {
   toAmount: bigint;
   timestamp: number;
   chainId: number;
+  txHash: string;
 };
 
 export interface BlockProcessor {
@@ -16,3 +17,8 @@ export interface BlockProcessor {
     transactionHash: string
   ): Promise<Swap | null>;
 }
+
+export type Position = {
+  account: string;
+  target: string;
+};
