@@ -1,6 +1,7 @@
 // import * as functions from "firebase-functions";
 
 import OneInchRouterTransactionProcessor from "./transaction-processors/1inch-processor";
+import { getSwapData } from "./trader";
 
 // // Start writing functions
 // // https://firebase.google.com/docs/functions/typescript
@@ -25,11 +26,12 @@ const provider = new ethers.JsonRpcProvider(rpcEndpoints[1]);
 
 const processor = new OneInchRouterTransactionProcessor();
 
-fetchBlocks(provider, 17051669 - 100, 17051669)
+fetchBlocks(provider, 17051669 - 10, 17051669)
   .then((blocks) =>
     Promise.all(blocks.map((block) => processor.parseBlock(block)))
   )
   .then((swaps) => swaps.flat())
+  .then((swaps) => getSwapData(swaps[0]))
   .then(console.log);
 
 // fetchEvents(provider, 17050106, 17050185, [

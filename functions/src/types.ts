@@ -6,6 +6,7 @@ export type Swap = {
   fromAmount: bigint;
   toAmount: bigint;
   timestamp: number;
+  chainId: number;
 };
 
 export interface BlockProcessor {

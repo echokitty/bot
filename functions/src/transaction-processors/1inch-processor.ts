@@ -1,4 +1,4 @@
-import { ethers, toBeHex } from "ethers";
+import { ethers, toBeHex, toNumber } from "ethers";
 import { Swap } from "../types";
 import BaseProcessor from "./base-processor";
 
@@ -46,7 +46,7 @@ const unoswapBaseParams = [
   "uint256[]", // pools
 ];
 
-type SwapData = Omit<Swap, "timestamp">;
+type SwapData = Omit<Swap, "timestamp" | "chainId">;
 
 class OneInchRouterTransactionProcessor extends BaseProcessor {
   async parseTransaction(
@@ -55,7 +55,12 @@ class OneInchRouterTransactionProcessor extends BaseProcessor {
   ): Promise<Swap | null> {
     const transaction = block.getPrefetchedTransaction(transactionHash);
     const result = await this._parseTransactionData(transaction);
-    return result ? { ...result, timestamp: block.timestamp } : null;
+    if (!result) return null;
+    return {
+      ...result,
+      timestamp: block.timestamp,
+      chainId: toNumber(transaction.chainId),
+    };
   }
 
   private async _parseTransactionData(
