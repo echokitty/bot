@@ -1,8 +1,8 @@
-import { Contract, ethers } from "ethers";
+import { BlockTag, Contract, ethers } from "ethers";
 import * as functions from "firebase-functions";
 import fetch from "node-fetch";
 import * as abis from "./abis";
-import { botPrivateKey, rpcEndpoints } from "./constants";
+import { botPrivateKey, nativeTokenAddress, rpcEndpoints } from "./constants";
 import { fetchBlocks, fetchPositions } from "./fetcher";
 import { metaProcessor } from "./transaction-processors";
 import { Swap } from "./types";
@@ -28,16 +28,33 @@ export async function getSwapData(
   return json as object;
 }
 
+const getBalance = (
+  provider: ethers.Provider,
+  account: string,
+  token: string,
+  blockTag?: BlockTag
+): Promise<bigint> => {
+  if (token === nativeTokenAddress) {
+    return provider.getBalance(account, blockTag);
+  } else {
+    const erc = new Contract(token, abis.erc20, provider);
+    return erc.balanceOf(account, { blockTag });
+  }
+};
+
 export async function scaleSwap(
   provider: ethers.Provider,
   swap: Swap,
   account: string
 ): Promise<Swap | null> {
-  console.log(swap.desc.fromToken);
-  const fromToken = new Contract(swap.desc.fromToken, abis.erc20, provider);
   const [balanceTarget, balanceOwn] = await Promise.all([
-    fromToken.balanceOf(swap.sender, { blockTag: swap.blockNumber - 1 }),
-    fromToken.balanceOf(account),
+    getBalance(
+      provider,
+      swap.sender,
+      swap.desc.fromToken,
+      swap.blockNumber - 1
+    ),
+    getBalance(provider, account, swap.desc.fromToken),
   ]);
 
   const scaledAmountIn =
